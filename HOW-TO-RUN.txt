@@ -17,6 +17,7 @@ Instructions for running BenchmarkSQL on PostgreSQL
 
     postgres=# CREATE USER benchmarksql WITH ENCRYPTED PASSWORD 'changeme';
     postgres=# CREATE DATABASE benchmarksql OWNER benchmarksql;
+    postgres=# GRANT ALL ON SCHEMA public TO benchmarksql;
     postgres=# \q
     [postgres#localhost ~] $
 

@@ -85,26 +85,37 @@ public class jTPCCTerminal implements jTPCCConfig, Runnable
 
     public void run()
     {
-	executeTransactions(numTransactions);
-	try
-	{
-	    printMessage("");
-	    printMessage("Closing statement and connection...");
+	    executeTransactions(numTransactions);
+        try
+        {
+            conn.prepareStatement("SELECT dcsim_end_simulation();");
+            conn.commit();
+        }
+        catch (Exception e)
+        {
+            printMessage("");
+    	    printMessage("An error occurred!");
+	        logException(e);
+        }
+        try
+        {
+            printMessage("");
+            printMessage("Closing statement and connection...");
 
-	    stmt.close();
-	    conn.close();
-	}
-	catch(Exception e)
-	{
-	    printMessage("");
-	    printMessage("An error occurred!");
-	    logException(e);
-	}
+            stmt.close();
+            conn.close();
+        }
+        catch(Exception e)
+        {
+            printMessage("");
+            printMessage("An error occurred!");
+            logException(e);
+        }
 
-	printMessage("");
-	printMessage("Terminal \'" + terminalName + "\' finished after " + (transactionCount-1) + " transaction(s).");
+        printMessage("");
+        printMessage("Terminal \'" + terminalName + "\' finished after " + (transactionCount-1) + " transaction(s).");
 
-	parent.signalTerminalEnded(this, newOrderCounter);
+        parent.signalTerminalEnded(this, newOrderCounter);
     }
 
     public void stopRunningWhenPossible()
@@ -124,9 +135,25 @@ public class jTPCCTerminal implements jTPCCConfig, Runnable
 	else
 	    printMessage("Executing for a limited time...");
 
+    boolean warmed_up = false;
 	for(int i = 0; (i < numTransactions || numTransactions == -1) && !stopRunning; i++)
 	{
-
+        if (!warmed_up && i >= numTransactions / 4)
+        {
+            try
+            {
+                conn.prepareStatement("CREATE EXTENSION dcsim;");
+                conn.prepareStatement("SELECT dcsim_start_simulation();");
+                conn.commit();
+            }
+            catch (Exception e)
+            {
+                printMessage("");
+                printMessage("An error occurred!");
+                logException(e);
+            }
+            warmed_up = true;
+        }
 	    long transactionType = rnd.nextLong(1, 100);
 	    int skippedDeliveries = 0, newOrder = 0;
 	    String transactionTypeName;
