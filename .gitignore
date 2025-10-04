@@ -1,2 +1,4 @@
 build/
 dist/
+run/tpcc-data/
+run/tpch-data/
