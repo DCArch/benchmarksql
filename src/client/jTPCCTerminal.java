@@ -88,13 +88,14 @@ public class jTPCCTerminal implements jTPCCConfig, Runnable
 	    executeTransactions(numTransactions);
         try
         {
-            conn.prepareStatement("SELECT dcsim_end_simulation();");
+            printMessage("");
+            printMessage("TPCC: All transactions completed, ending simulation");
+            stmt1.execute("SELECT dcsim_end_simulation();");
             conn.commit();
         }
         catch (Exception e)
         {
-            printMessage("");
-    	    printMessage("An error occurred!");
+            printMessage("TPCC ERROR: Failed to end simulation");
 	        logException(e);
         }
         try
@@ -140,16 +141,16 @@ public class jTPCCTerminal implements jTPCCConfig, Runnable
 	{
         if (!warmed_up && i >= numTransactions / 4)
         {
+            printMessage("");
+            printMessage("TPCC: Warmup complete (transaction " + i + " of " + numTransactions + "), starting simulation");
             try
             {
-                conn.prepareStatement("CREATE EXTENSION dcsim;");
-                conn.prepareStatement("SELECT dcsim_start_simulation();");
+                stmt1.execute("SELECT dcsim_start_simulation();");
                 conn.commit();
             }
             catch (Exception e)
             {
-                printMessage("");
-                printMessage("An error occurred!");
+                printMessage("TPCC ERROR: Failed to start simulation");
                 logException(e);
             }
             warmed_up = true;
